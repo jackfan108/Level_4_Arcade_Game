@@ -1,0 +1,14 @@
+todo
+
+recreate map for lode runner
+move conditions (ladder)
+move conditions (rope)
+move conditions (falling)
+gold collection
+gold collection (ladder)
+
+event queue
+
+enemies moving during loop
+collision detection
+losing

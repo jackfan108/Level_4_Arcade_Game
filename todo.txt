@@ -1,0 +1,14 @@
+todo
+
+recreate map for lode runner DONE
+move conditions:
+  only move up on ladder DONE
+  gravity DONE
+gold collection
+gold collection (ladder creation)
+
+event queue
+
+enemies moving during loop
+collision detection
+losing
