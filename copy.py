@@ -25,6 +25,11 @@ def screen_pos_index (index):
     y = (index - x) / LEVEL_WIDTH
     return screen_pos(x,y)
 
+def pixel_to_index (x,y):
+    indx = (x-10) / CELL_SIZE
+    indy = (y-10) / CELL_SIZE
+    return indx, indy
+
 def index (x,y):
     return x + (y*LEVEL_WIDTH)
 
@@ -70,9 +75,11 @@ class Player (Character):
 
 
 class Baddie (Character):
+    baddiecords = []
     def __init__ (self,x,y,window,level,player):
         Character.__init__(self,'red.gif',x,y,window,level)
         self._player = player
+        Baddie.baddiecords.append((x,y))
 
 
 def lost (window):
@@ -127,6 +134,8 @@ def create_screen (level,window):
     ladder = 'ladder.gif'
     gold = 'gold.gif'
     rope = 'rope.gif'
+    brickdic = {}
+    golddic = {}
     def image (sx,sy,what):
         return Image(Point(sx+CELL_SIZE/2,sy+CELL_SIZE/2),what)
 
@@ -134,6 +143,7 @@ def create_screen (level,window):
         if cell == 1:
             (sx,sy) = screen_pos_index(index)
             elt = image(sx,sy,brick)
+            brickdic[pixel_to_index(sx, sy)] = elt
             elt.draw(window)
         elif cell == 2:
             (sx,sy) = screen_pos_index(index)
@@ -146,7 +156,9 @@ def create_screen (level,window):
         elif cell == 4:
             (sx,sy) = screen_pos_index(index)
             elt = image(sx,sy,gold)
+            golddic[pixel_to_index(sx, sy)] = elt
             elt.draw(window)
+    return brickdic, golddic
 
 
 MOVE = {
@@ -156,6 +168,16 @@ MOVE = {
     'Down' : (0,1)
 }
 
+#returns whatever the character is
+def collision_detetction(player, screen, baddiecords):
+    px = player._x
+    py = player._y
+    if screen[index(px,py)] == 4:
+        return 'gold'
+    for cord in baddiecords:
+        if (px, py) == cord:
+            return 'baddie'
+    return None
 
 def main ():
 
@@ -172,13 +194,12 @@ def main ():
 
     level = create_level(1)
 
-    screen = create_screen(level,window)
-
+    brickdic, golddic = create_screen(level,window)
     p = Player(10,18,window,level)
 
-    baddie1 = Baddie(5,1,window,level,p)
-    baddie2 = Baddie(10,1,window,level,p)
-    baddie3 = Baddie(15,1,window,level,p)
+    baddie1 = Baddie(5,18,window,level,p)
+    #baddie2 = Baddie(10,18,window,level,p)
+    baddie3 = Baddie(15,18,window,level,p)
 
     while not p.at_exit():
         key = window.checkKey()
@@ -188,6 +209,12 @@ def main ():
         if key in MOVE:
             (dx,dy) = MOVE[key]
             p.move(dx,dy)
+            collision = collision_detetction(p, level, Baddie.baddiecords)
+            if collision == 'gold':
+                level[index(p._x, p._y)] = 0
+                golddic[(p._x, p._y)].undraw()
+            elif collision == 'baddie':
+                lost(window)
 
         # baddies should probably move here
 
