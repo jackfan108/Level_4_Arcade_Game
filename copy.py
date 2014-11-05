@@ -5,7 +5,8 @@
 #
 # Version without baddies running around
 #
-
+import time
+from random import choice
 
 from graphics import *
 
@@ -15,6 +16,10 @@ LEVEL_HEIGHT = 20
 CELL_SIZE = 24
 WINDOW_WIDTH = CELL_SIZE*LEVEL_WIDTH
 WINDOW_HEIGHT = CELL_SIZE*LEVEL_HEIGHT
+
+def time_to_round(start):
+    elapsed = time.time() - start
+    return int(elapsed)
 
 #cord to pixel
 def screen_pos (x,y):
@@ -52,20 +57,31 @@ class Character (object):
     def move (self,dx,dy):
         tx = self._x + dx
         ty = self._y + dy
-        if tx >= 0 and ty >= 0 and tx < LEVEL_WIDTH and ty < LEVEL_HEIGHT:
-            if self._level[index(tx,ty)] != 1:
-              if dy != -1:
-                self._x = tx
-                self._y = ty
-                self._img.move(dx*CELL_SIZE,dy*CELL_SIZE)
-                while (self._level[index(self._x, self._y)] != 3 and (self._level[index(self._x, self._y+1)] == 0 or self._level[index(self._x, self._y+1)] == 3)): #falling
-                  self._y += 1
-                  self._img.move(0*CELL_SIZE,1*CELL_SIZE)
-              elif dy == -1: # only move up on ladders
-                if self._level[index(tx,ty)] == 2 or ((self._level[index(tx,ty)] == 0 or self._level[index(tx,ty)] == 3)and self._level[index(self._x, self._y)] == 2):
-                  self._x = tx
-                  self._y = ty
-                  self._img.move(dx*CELL_SIZE,dy*CELL_SIZE)
+        if in_level(tx,ty):
+            dest = self._level[index(tx,ty)]
+            if dest != 1: # not brick
+                if dy != -1:
+                    self._x = tx
+                    self._y = ty
+                    self._img.move(dx*CELL_SIZE,dy*CELL_SIZE)
+                    while (can_fall(self)): #falling
+                        self._y += 1
+                        self._img.move(0*CELL_SIZE,1*CELL_SIZE)
+                elif dy == -1: # only move up on ladders
+                    if dest == 2 or (dest in [0,3] and self._level[index(self._x, self._y)] == 2):
+                        self._x = tx
+                        self._y = ty
+                        self._img.move(dx*CELL_SIZE,dy*CELL_SIZE)
+
+def in_level(x,y):
+    return x >= 0 and y >= 0 and x < LEVEL_WIDTH and y < LEVEL_HEIGHT
+
+def can_fall(character):
+    if (character._y < (LEVEL_HEIGHT - 1)):
+        square_at = character._level[index(character._x, character._y)]
+        square_below = character._level[index(character._x, character._y+1)]
+        return square_at != 3 and (square_below in [0,3,4])
+    return False
                 
                 
 
@@ -93,6 +109,9 @@ class Baddie (Character):
         Character.__init__(self,'red.gif',x,y,window,level)
         self._player = player
         Baddie.baddiecords.append((x,y))
+
+    # def automove(self, round):
+    #     if 
 
 def gold_collected (player, window, level, golddic):
 
@@ -130,6 +149,7 @@ def won (window):
 
 def create_level(self):
     screen = []
+    # a lot less gold, level easy to finish for testing
     screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,2,0,0,0,0,0,0,0,2,1,1,1,1,1,1,1,1,1,1,1,1,0])
     screen.extend([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
     screen.extend([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0])
@@ -151,7 +171,7 @@ def create_level(self):
     screen.extend([1,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,2,0,0,0,0,0,0,0,1])
     screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
 
-
+    # the original level
     # screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,2,0,0,0,0,0,0,0,2,1,1,1,1,1,1,1,1,1,1,1,1,0])
     # screen.extend([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
     # screen.extend([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0])
@@ -240,8 +260,9 @@ def main ():
     #baddie1 = Baddie(5,2, window,level,p)
     #baddie2 = Baddie(18,1,window,level,p)
     #baddie3 = Baddie(32,2,window,level,p)
-
+    start = time.time()
     while not p.at_exit():
+        round = time_to_round(start)
         key = window.checkKey()
         if key == 'q':
             window.close()
@@ -259,7 +280,6 @@ def main ():
                 golddic[(p._x, p._y)].undraw()
                 del golddic[(p._x, p._y)]
                 gold_collected (p, window, level, golddic)
-                print golddic
             elif collision == 'baddie':
                 lost(window)
 
