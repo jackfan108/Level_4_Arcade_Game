@@ -16,20 +16,23 @@ CELL_SIZE = 24
 WINDOW_WIDTH = CELL_SIZE*LEVEL_WIDTH
 WINDOW_HEIGHT = CELL_SIZE*LEVEL_HEIGHT
 
-
+#cord to pixel
 def screen_pos (x,y):
     return (x*CELL_SIZE+10,y*CELL_SIZE+10)
 
-def screen_pos_index (index):
-    x = index % LEVEL_WIDTH
-    y = (index - x) / LEVEL_WIDTH
-    return screen_pos(x,y)
-
+#pixel to cord
 def pixel_to_index (x,y):
     indx = (x-10) / CELL_SIZE
     indy = (y-10) / CELL_SIZE
     return indx, indy
 
+#screen 1-D array to cord
+def screen_pos_index (index):
+    x = index % LEVEL_WIDTH
+    y = (index - x) / LEVEL_WIDTH
+    return screen_pos(x,y)
+
+#cord to screen 1-D array
 def index (x,y):
     return x + (y*LEVEL_WIDTH)
 
@@ -59,7 +62,7 @@ class Character (object):
                   self._y += 1
                   self._img.move(0*CELL_SIZE,1*CELL_SIZE)
               elif dy == -1: # only move up on ladders
-                if self._level[index(tx,ty)] == 2 or (self._level[index(tx,ty)] == 0 and self._level[index(self._x, self._y)] == 2):
+                if self._level[index(tx,ty)] == 2 or ((self._level[index(tx,ty)] == 0 or self._level[index(tx,ty)] == 3)and self._level[index(self._x, self._y)] == 2):
                   self._x = tx
                   self._y = ty
                   self._img.move(dx*CELL_SIZE,dy*CELL_SIZE)
@@ -73,6 +76,16 @@ class Player (Character):
     def at_exit (self):
         return (self._y == 0)
 
+    def digright (self, screen, brickdic):
+        if screen[index(self._x+1,self._y)] == 0 and screen[index(self._x+1,self._y+1)] == 1:
+            screen[index(self._x+1,self._y+1)] = 0
+            brickdic[(self._x+1, self._y+1)].undraw()
+            return screen
+    def digleft (self, screen, brickdic):
+        if screen[index(self._x-1,self._y)] == 0 and screen[index(self._x-1,self._y+1)] == 1:
+            screen[index(self._x-1,self._y+1)] = 0
+            brickdic[(self._x-1, self._y+1)].undraw()
+            return screen
 
 class Baddie (Character):
     baddiecords = []
@@ -80,6 +93,17 @@ class Baddie (Character):
         Character.__init__(self,'red.gif',x,y,window,level)
         self._player = player
         Baddie.baddiecords.append((x,y))
+
+def gold_collected (player, window, level, golddic):
+
+    if len(golddic) == 0:
+        for i in range(3):
+            level[index(34,i)] = 2
+            draw_item(level, window, 'ladder', index(34,i))
+        player._img.undraw()
+        player._img.draw(window)
+
+
 
 
 def lost (window):
@@ -120,44 +144,60 @@ def create_level(self):
     screen.extend([2,0,0,0,0,0,3,3,0,0,0,0,0,0,3,3,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2])
     screen.extend([2,0,1,1,1,1,0,0,1,1,1,1,1,1,0,0,1,2,1,0,0,0,0,3,3,3,2,0,0,1,1,1,1,1,2])
     screen.extend([2,0,1,0,0,1,0,0,1,0,0,0,0,1,0,0,1,2,1,1,1,1,1,1,0,0,2,0,0,1,0,0,0,1,2])
-    screen.extend([2,0,1,4,4,1,0,0,1,0,4,4,4,1,0,0,1,2,0,4,4,4,0,1,0,0,2,0,0,1,4,4,4,1,2])
+    screen.extend([2,0,1,0,0,1,0,0,1,0,0,0,0,1,0,0,1,2,0,0,0,0,0,1,0,0,2,0,0,1,0,0,0,1,2])
     screen.extend([2,0,1,1,1,1,0,0,1,2,1,1,1,1,0,0,1,1,1,1,1,1,1,1,0,0,2,0,0,1,1,1,1,1,2])
     screen.extend([2,0,3,3,3,3,3,3,3,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,3,3,3,3,3,3,3,2])
     screen.extend([1,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,1])
     screen.extend([1,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,2,0,0,0,0,0,0,0,1])
     screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
+
+
+    # screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,2,0,0,0,0,0,0,0,2,1,1,1,1,1,1,1,1,1,1,1,1,0])
+    # screen.extend([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+    # screen.extend([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0])
+    # screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1])
+    # screen.extend([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,1,2,1,0,0,0,1,2,0,1])
+    # screen.extend([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,2,0,0,0,0,1,1,1,1])
+    # screen.extend([3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,0,0,0,0,0,0,0,0,2,0,0,0,0,3,3,3,3])
+    # screen.extend([2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0])
+    # screen.extend([2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1])
+    # screen.extend([2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0,0,0,0,0,0,2,3,3,3,3,3,3,3,2])
+    # screen.extend([2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2])
+    # screen.extend([2,0,0,0,0,0,3,3,0,0,0,0,0,0,3,3,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2])
+    # screen.extend([2,0,1,1,1,1,0,0,1,1,1,1,1,1,0,0,1,2,1,0,0,0,0,3,3,3,2,0,0,1,1,1,1,1,2])
+    # screen.extend([2,0,1,0,0,1,0,0,1,0,0,0,0,1,0,0,1,2,1,1,1,1,1,1,0,0,2,0,0,1,0,0,0,1,2])
+    # screen.extend([2,0,1,4,4,1,0,0,1,0,4,4,4,1,0,0,1,2,0,4,4,4,0,1,0,0,2,0,0,1,4,4,4,1,2])
+    # screen.extend([2,0,1,1,1,1,0,0,1,2,1,1,1,1,0,0,1,1,1,1,1,1,1,1,0,0,2,0,0,1,1,1,1,1,2])
+    # screen.extend([2,0,3,3,3,3,3,3,3,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,3,3,3,3,3,3,3,2])
+    # screen.extend([1,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,1])
+    # screen.extend([1,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,2,0,0,0,0,0,0,0,1])
+    # screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
     return screen
+
+def draw_item(level, window, item, index):
+    def image (sx,sy,what):
+        return Image(Point(sx+CELL_SIZE/2,sy+CELL_SIZE/2),what)
+    item = item + '.gif'
+    sx, sy = screen_pos_index(index)
+    elt = image(sx, sy, item)
+    elt.draw(window)
+    return sx, sy, elt
 
 def create_screen (level,window):
     # use this instead of Rectangle below for nicer screen
-    brick = 'brick.gif'
-    ladder = 'ladder.gif'
-    gold = 'gold.gif'
-    rope = 'rope.gif'
     brickdic = {}
     golddic = {}
-    def image (sx,sy,what):
-        return Image(Point(sx+CELL_SIZE/2,sy+CELL_SIZE/2),what)
-
     for (index,cell) in enumerate(level):
         if cell == 1:
-            (sx,sy) = screen_pos_index(index)
-            elt = image(sx,sy,brick)
+            sx, sy, elt = draw_item(level, window, 'brick', index)
             brickdic[pixel_to_index(sx, sy)] = elt
-            elt.draw(window)
         elif cell == 2:
-            (sx,sy) = screen_pos_index(index)
-            elt = image(sx,sy,ladder)
-            elt.draw(window)
+            draw_item(level, window, 'ladder', index)
         elif cell == 3:
-            (sx,sy) = screen_pos_index(index)
-            elt = image(sx,sy,rope)
-            elt.draw(window)
+            draw_item(level, window, 'rope', index)
         elif cell == 4:
-            (sx,sy) = screen_pos_index(index)
-            elt = image(sx,sy,gold)
+            sx, sy, elt = draw_item(level, window, 'gold', index)
             golddic[pixel_to_index(sx, sy)] = elt
-            elt.draw(window)
     return brickdic, golddic
 
 
@@ -169,10 +209,10 @@ MOVE = {
 }
 
 #returns whatever the character is
-def collision_detetction(player, screen, baddiecords):
+def collision_detetction(window, level, player, baddiecords, golddic):
     px = player._x
     py = player._y
-    if screen[index(px,py)] == 4:
+    if level[index(px,py)] == 4:
         return 'gold'
     for cord in baddiecords:
         if (px, py) == cord:
@@ -197,22 +237,29 @@ def main ():
     brickdic, golddic = create_screen(level,window)
     p = Player(10,18,window,level)
 
-    baddie1 = Baddie(5,18,window,level,p)
-    #baddie2 = Baddie(10,18,window,level,p)
-    baddie3 = Baddie(15,18,window,level,p)
+    #baddie1 = Baddie(5,2, window,level,p)
+    #baddie2 = Baddie(18,1,window,level,p)
+    #baddie3 = Baddie(32,2,window,level,p)
 
     while not p.at_exit():
         key = window.checkKey()
         if key == 'q':
             window.close()
             exit(0)
-        if key in MOVE:
+        elif key == 'a':
+            p.digleft(level, brickdic)
+        elif key == 'z':
+            p.digright(level, brickdic)
+        elif key in MOVE:
             (dx,dy) = MOVE[key]
             p.move(dx,dy)
-            collision = collision_detetction(p, level, Baddie.baddiecords)
+            collision = collision_detetction(window, level, p, Baddie.baddiecords, golddic)
             if collision == 'gold':
                 level[index(p._x, p._y)] = 0
                 golddic[(p._x, p._y)].undraw()
+                del golddic[(p._x, p._y)]
+                gold_collected (p, window, level, golddic)
+                print golddic
             elif collision == 'baddie':
                 lost(window)
 
