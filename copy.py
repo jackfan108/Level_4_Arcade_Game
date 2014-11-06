@@ -17,9 +17,18 @@ CELL_SIZE = 24
 WINDOW_WIDTH = CELL_SIZE*LEVEL_WIDTH
 WINDOW_HEIGHT = CELL_SIZE*LEVEL_HEIGHT
 
-def time_to_round(start):
+MOVE = {
+    'Left': (-1,0),
+    'Right': (1,0),
+    'Up' : (0,-1),
+    'Down' : (0,1)
+}
+
+def time_to_tick(start, tick):
     elapsed = time.time() - start
-    return int(elapsed)
+    if int(elapsed) != tick:
+        return False, int(elapsed)
+    return True, int(elapsed)
 
 #cord to pixel
 def screen_pos (x,y):
@@ -82,8 +91,6 @@ def can_fall(character):
         square_below = character._level[index(character._x, character._y+1)]
         return square_at != 3 and (square_below in [0,3,4])
     return False
-                
-                
 
 class Player (Character):
     def __init__ (self,x,y,window,level):
@@ -104,14 +111,46 @@ class Player (Character):
             return screen
 
 class Baddie (Character):
-    baddiecords = []
+    baddies = []
     def __init__ (self,x,y,window,level,player):
         Character.__init__(self,'red.gif',x,y,window,level)
         self._player = player
-        Baddie.baddiecords.append((x,y))
+        Baddie.baddies.append(self)
 
-    # def automove(self, round):
-    #     if 
+    # returns a list of the possible coordinates to go to
+    def possible_moves(self, level):
+        moves = []
+        x, y = self._x, self._y
+        if in_level(x,y):
+            if level[index(x, y+1)] != 1:
+                moves.append((0, 1))
+            if level[index(x+1, y)] != 1:
+                moves.append((1, 0))
+            if level[index(x-1, y)] != 1:
+                moves.append((-1, 0))
+            if level[index(x, y-1)] != 1 and level[index(x, y)] == 2:
+                moves.append((0, -1))
+        return moves
+
+    def move (self,dx,dy):
+        tx = self._x + dx
+        ty = self._y + dy
+        if in_level(tx,ty):
+            dest = self._level[index(tx,ty)]
+            if dest != 1: # not brick
+                if dy != -1:
+                    self._x = tx
+                    self._y = ty
+                    self._img.move(dx*CELL_SIZE,dy*CELL_SIZE)
+
+                    while (can_fall(self)): #falling
+                        self._y += 1
+                        self._img.move(0*CELL_SIZE,1*CELL_SIZE)
+                elif dy == -1: # only move up on ladders
+                    if dest == 2 or (dest in [0,3] and self._level[index(self._x, self._y)] == 2):
+                        self._x = tx
+                        self._y = ty
+                        self._img.move(dx*CELL_SIZE,dy*CELL_SIZE)
 
 def gold_collected (player, window, level, golddic):
 
@@ -121,6 +160,9 @@ def gold_collected (player, window, level, golddic):
             draw_item(level, window, 'ladder', index(34,i))
         player._img.undraw()
         player._img.draw(window)
+        for baddie in Baddie.baddies:
+            baddie._img.undraw()
+            baddie._img.draw(window)
 
 
 
@@ -149,7 +191,7 @@ def won (window):
 
 def create_level(self):
     screen = []
-    # a lot less gold, level easy to finish for testing
+    #a lot less gold, level easy to finish for testing
     screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,2,0,0,0,0,0,0,0,2,1,1,1,1,1,1,1,1,1,1,1,1,0])
     screen.extend([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
     screen.extend([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0])
@@ -220,22 +262,14 @@ def create_screen (level,window):
             golddic[pixel_to_index(sx, sy)] = elt
     return brickdic, golddic
 
-
-MOVE = {
-    'Left': (-1,0),
-    'Right': (1,0),
-    'Up' : (0,-1),
-    'Down' : (0,1)
-}
-
 #returns whatever the character is
-def collision_detetction(window, level, player, baddiecords, golddic):
+def collision_detetction(window, level, player, golddic):
     px = player._x
     py = player._y
     if level[index(px,py)] == 4:
         return 'gold'
-    for cord in baddiecords:
-        if (px, py) == cord:
+    for baddie in Baddie.baddies:
+        if (px, py) == (baddie._x, baddie._y):
             return 'baddie'
     return None
 
@@ -257,12 +291,17 @@ def main ():
     brickdic, golddic = create_screen(level,window)
     p = Player(10,18,window,level)
 
-    #baddie1 = Baddie(5,2, window,level,p)
-    #baddie2 = Baddie(18,1,window,level,p)
-    #baddie3 = Baddie(32,2,window,level,p)
+    baddie1 = Baddie(5,2, window,level,p)
+    baddie2 = Baddie(18,1,window,level,p)
+    baddie3 = Baddie(32,2,window,level,p)
     start = time.time()
+    tick = 0
     while not p.at_exit():
-        round = time_to_round(start)
+        newTick, tick = time_to_tick(start, tick)
+        if newTick == False:
+            for baddie in Baddie.baddies:
+                x, y = choice(baddie.possible_moves(level))
+                baddie.move(x, y)
         key = window.checkKey()
         if key == 'q':
             window.close()
@@ -274,7 +313,7 @@ def main ():
         elif key in MOVE:
             (dx,dy) = MOVE[key]
             p.move(dx,dy)
-            collision = collision_detetction(window, level, p, Baddie.baddiecords, golddic)
+            collision = collision_detetction(window, level, p, golddic)
             if collision == 'gold':
                 level[index(p._x, p._y)] = 0
                 golddic[(p._x, p._y)].undraw()
