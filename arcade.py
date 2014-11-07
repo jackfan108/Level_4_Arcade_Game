@@ -95,7 +95,7 @@ def can_fall(character):
 
 class Player (Character):
     def __init__ (self,x,y,window,level):
-        Character.__init__(self,'android.gif',x,y,window,level)
+        Character.__init__(self,'t_android.gif',x,y,window,level)
 
     def at_exit (self):
         return (self._y == 0)
@@ -124,7 +124,7 @@ class Player (Character):
 class Baddie (Character):
     baddies = []
     def __init__ (self,x,y,window,level,player):
-        Character.__init__(self,'red.gif',x,y,window,level)
+        Character.__init__(self,'t_red.gif',x,y,window,level)
         self._player = player
         Baddie.baddies.append(self)
 
