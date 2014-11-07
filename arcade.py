@@ -143,12 +143,12 @@ class Baddie (Character):
                 moves.append((0, -1))
         return moves
 
-def gold_collected (player, window, level, golddic):
+def gold_collected (player, window, level, golddic, exitrow, exitlength):
 
     if len(golddic) == 0:
-        for i in range(3):
-            level[index(34,i)] = 2
-            draw_item(level, window, 'ladder', index(34,i))
+        for i in range(exitlength):
+            level[index(exitrow,i)] = 2
+            draw_item(level, window, 'ladder', index(exitrow,i))
         player._img.undraw()
         player._img.draw(window)
         for baddie in Baddie.baddies:
@@ -195,51 +195,11 @@ def won (window):
 # 3 rope
 # 4 gold
 
-def create_level(self):
+def create_level(level):
     screen = []
-    #test of level 52
-    # screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
-    # screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
-    # screen.extend([1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1])
-    # screen.extend([1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1])
-    # screen.extend([1,1,1,3,3,3,3,0,0,4,0,0,2,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1])
-    # screen.extend([1,1,1,2,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,1,1,1])
-    # screen.extend([1,1,1,2,0,0,0,0,0,0,0,0,0,3,3,3,3,3,0,0,3,3,3,3,3,0,2,1,1,1,1,1,1,1,1])
-    # screen.extend([1,1,1,2,3,3,3,3,3,3,3,3,3,3,0,0,0,0,0,0,0,2,0,0,0,0,2,0,0,0,0,1,1,1,1])
-    # screen.extend([1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,2,1,0,0,0,2,0,0,0,0,1,1,1,1])
-    # screen.extend([1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,2,1,1,1,1])
-    # screen.extend([1,1,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,1,1,1,1])
-    # screen.extend([1,1,1,2,0,0,0,0,0,0,4,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,1,0,0,2,0,1,1,1,1])
-    # screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,2,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,2,0,1,1,1,1])
-    # screen.extend([1,1,1,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,1,1,1,1])
-    # screen.extend([1,1,1,0,0,0,0,0,0,0,4,0,0,2,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,2,0,1,1,1,1])
-    # screen.extend([1,1,1,2,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,2,0,1,1,1,1])
-    # screen.extend([1,1,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,3,3,3,3,2,0,1,1,1,1])
-    # screen.extend([1,1,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1])
-    # screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
-    # screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
-
-    # the original level
-    screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,2,0,0,0,0,0,0,0,2,1,1,1,1,1,1,1,1,1,1,1,1,0])
-    screen.extend([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
-    screen.extend([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0])
-    screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1])
-    screen.extend([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,1,2,1,0,0,0,1,2,0,1])
-    screen.extend([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,2,0,0,0,0,1,1,1,1])
-    screen.extend([3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,0,0,0,0,0,0,0,0,2,0,0,0,0,3,3,3,3])
-    screen.extend([2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0])
-    screen.extend([2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1])
-    screen.extend([2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0,0,0,0,0,0,2,3,3,3,3,3,3,3,2])
-    screen.extend([2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2])
-    screen.extend([2,0,0,0,0,0,3,3,0,0,0,0,0,0,3,3,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2])
-    screen.extend([2,0,1,1,1,1,0,0,1,1,1,1,1,1,0,0,1,2,1,0,0,0,0,3,3,3,2,0,0,1,1,1,1,1,2])
-    screen.extend([2,0,1,0,0,1,0,0,1,0,0,0,0,1,0,0,1,2,1,1,1,1,1,1,0,0,2,0,0,1,0,0,0,1,2])
-    screen.extend([2,0,1,4,4,1,0,0,1,0,4,4,4,1,0,0,1,2,0,4,4,4,0,1,0,0,2,0,0,1,4,4,4,1,2])
-    screen.extend([2,0,1,1,1,1,0,0,1,2,1,1,1,1,0,0,1,1,1,1,1,1,1,1,0,0,2,0,0,1,1,1,1,1,2])
-    screen.extend([2,0,3,3,3,3,3,3,3,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,3,3,3,3,3,3,3,2])
-    screen.extend([1,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,1])
-    screen.extend([1,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,2,0,0,0,0,0,0,0,1])
-    screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
+    # convert string into list of ints
+    for line in range(1,LEVEL_HEIGHT+1):
+      screen.extend(map(int,level[line].strip().split(',')))
     return screen
 
 def draw_item(level, window, item, index):
@@ -252,7 +212,6 @@ def draw_item(level, window, item, index):
     return sx, sy, elt
 
 def create_screen (level,window):
-    # use this instead of Rectangle below for nicer screen
     brickdic = {}
     golddic = {}
     for (index,cell) in enumerate(level):
@@ -286,68 +245,68 @@ def collision_detetction(window, level, character, player, golddic):
 def main ():
 
     window = GraphWin("Maze", WINDOW_WIDTH+20, WINDOW_HEIGHT+20)
-
-    rect = Rectangle(Point(5,5),Point(WINDOW_WIDTH+15,WINDOW_HEIGHT+15))
-    rect.setFill('sienna')
-    rect.setOutline('sienna')
-    rect.draw(window)
-    rect = Rectangle(Point(10,10),Point(WINDOW_WIDTH+10,WINDOW_HEIGHT+10))
-    rect.setFill('white')
-    rect.setOutline('white')
-    rect.draw(window)
-
-    level = create_level(1)
-
-    brickdic, golddic = create_screen(level,window)
-    refilllist = []
-    p = Player(14,17,window,level)
-
-    baddie1 = Baddie(22,17,window,level,p)
-    baddie2 = Baddie(22,11,window,level,p)
-    baddie3 = Baddie(23,4,window,level,p)
-    baddie4 = Baddie(7,8,window,level,p)
-    start = time.time()
-    tick = 0
-    while not p.at_exit():
-        sameTick, tick = time_to_tick(start, tick)
-        if sameTick == False:
-            level = refill(window, level, brickdic, refilllist, sameTick, tick, p, Baddie.baddies)
-            for baddie in Baddie.baddies:
-                try:
-                  x, y = choice(baddie.possible_moves(level))
-                  baddie.move(x, y)
-                except IndexError: # if we don't have any moves
-                  baddie.move(baddie._x, baddie._y)
-                collision = collision_detetction(window, level, baddie, p, golddic) # need to also run collision detection with bad guys
-                if collision == 'gold':
-                    level[index(baddie._x, baddie._y)] = 0
-                    golddic[(baddie._x, baddie._y)].undraw()
-                    del golddic[(baddie._x, baddie._y)]
-                    gold_collected (p, window, level, golddic)
-                elif collision == 'baddie':
-                    lost(window)
-        key = window.checkKey()
-        if key == 'q':
-            window.close()
-            exit(0)
-        elif key == 'a':
-            p.digleft(level, brickdic, refilllist, tick)
-        elif key == 'z':
-            p.digright(level, brickdic, refilllist, tick)
-        elif key in MOVE:
-            (dx,dy) = MOVE[key]
-            p.move(dx,dy)
-            collision = collision_detetction(window, level, p, p, golddic)
-            if collision == 'gold':
-                level[index(p._x, p._y)] = 0
-                golddic[(p._x, p._y)].undraw()
-                del golddic[(p._x, p._y)]
-                gold_collected (p, window, level, golddic)
-            elif collision == 'baddie':
-                lost(window)
-
-        # baddies should probably move here
-
+    for currentlevel in ['level1','level52','level148']:
+      rect = Rectangle(Point(5,5),Point(WINDOW_WIDTH+15,WINDOW_HEIGHT+15))
+      rect.setFill('sienna')
+      rect.setOutline('sienna')
+      rect.draw(window)
+      rect = Rectangle(Point(10,10),Point(WINDOW_WIDTH+10,WINDOW_HEIGHT+10))
+      rect.setFill('white')
+      rect.setOutline('white')
+      rect.draw(window)
+      levelfile = open(currentlevel+'.txt', 'r').read().splitlines()
+      
+      level = create_level(levelfile)
+      brickdic, golddic = create_screen(level,window)
+      refilllist = []
+      p = Player(int(levelfile[23]),int(levelfile[24]),window,level) # spawn player from the file
+      for i in range(1,int(levelfile[27])+1): # create baddies out of the file
+        baddie = Baddie(int(levelfile[2*i+26]),int(levelfile[2*i+27]),window,level,p)
+      start = time.time()
+      tick = 0
+      exitrow = int(levelfile[38])
+      exitlength = int(levelfile[39])
+      
+      while not p.at_exit():
+          sameTick, tick = time_to_tick(start, tick)
+          if sameTick == False:
+              level = refill(window, level, brickdic, refilllist, sameTick, tick, p, Baddie.baddies)
+              for baddie in Baddie.baddies:
+                  try:
+                    x, y = choice(baddie.possible_moves(level))
+                    baddie.move(x, y)
+                  except IndexError: # if we don't have any moves
+                    baddie.move(baddie._x, baddie._y)
+                  collision = collision_detetction(window, level, baddie, p, golddic) # need to also run collision detection with bad guys
+                  if collision == 'gold':
+                      level[index(baddie._x, baddie._y)] = 0
+                      golddic[(baddie._x, baddie._y)].undraw()
+                      del golddic[(baddie._x, baddie._y)]
+                      gold_collected (p, window, level, golddic, exitrow, exitlength)
+                  elif collision == 'baddie':
+                      lost(window)
+          key = window.checkKey()
+          if key == 'q':
+              window.close()
+              exit(0)
+          elif key == 'a':
+              p.digleft(level, brickdic, refilllist, tick)
+          elif key == 'z':
+              p.digright(level, brickdic, refilllist, tick)
+          elif key in MOVE:
+              (dx,dy) = MOVE[key]
+              p.move(dx,dy)
+              collision = collision_detetction(window, level, p, p, golddic)
+              if collision == 'gold':
+                  level[index(p._x, p._y)] = 0
+                  golddic[(p._x, p._y)].undraw()
+                  del golddic[(p._x, p._y)]
+                  gold_collected (p, window, level, golddic, exitrow, exitlength)
+              elif collision == 'baddie':
+                  lost(window)
+      for item in window.items[:]:
+        item.undraw()
+      Baddie.baddies = [] # reset the enemy list
     won(window)
 
 if __name__ == '__main__':
