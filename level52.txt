@@ -21,7 +21,7 @@
     screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
     return screen
     
-     p = Player(14,17,window,level)
+    p = Player(14,17,window,level)
 
     baddie1 = Baddie(22,17,window,level,p)
     baddie2 = Baddie(22,11,window,level,p)

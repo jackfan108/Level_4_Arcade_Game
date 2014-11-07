@@ -77,7 +77,8 @@ class Character (object):
                         self._y += 1
                         self._img.move(0*CELL_SIZE,1*CELL_SIZE)
                 elif dy == -1: # only move up on ladders
-                    if dest == 2 or (dest in [0,3] and self._level[index(self._x, self._y)] == 2):
+                    square_at = self._level[index(self._x, self._y)]
+                    if (dest == 2 or (dest in [0,3] and square_at == 2)) and square_at == 2:
                         self._x = tx
                         self._y = ty
                         self._img.move(dx*CELL_SIZE,dy*CELL_SIZE)
@@ -89,7 +90,7 @@ def can_fall(character):
     if (character._y < (LEVEL_HEIGHT - 1)):
         square_at = character._level[index(character._x, character._y)]
         square_below = character._level[index(character._x, character._y+1)]
-        return square_at != 3 and (square_below in [0,3,4])
+        return square_at not in [2,3,4] and (square_below in [0,3,4])
     return False
 
 class Player (Character):
@@ -100,16 +101,24 @@ class Player (Character):
         return (self._y == 0)
 
     def digright (self, screen, brickdic, refill, tick):
+        # check right and diagright space
         if screen[index(self._x+1,self._y)] == 0 and screen[index(self._x+1,self._y+1)] == 1:
             screen[index(self._x+1, self._y+1)] = 0
             brickdic[(self._x+1, self._y+1)].undraw()
-            refill.append((self._x+1, self._y+1, tick + 2))
+            refill.append((self._x+1, self._y+1, tick + 4))
+            for baddie in Baddie.baddies:
+              if (baddie._x, baddie._y) == (self._x+1,self._y): # force falling on dig
+                baddie.move(baddie._x, baddie._y)
             return screen
     def digleft (self, screen, brickdic, refill, tick):
+        #check left and diagleft space
         if screen[index(self._x-1,self._y)] == 0 and screen[index(self._x-1,self._y+1)] == 1:
             screen[index(self._x-1, self._y+1)] = 0
             brickdic[(self._x-1, self._y+1)].undraw()
-            refill.append((self._x-1, self._y+1, tick + 2))
+            refill.append((self._x-1, self._y+1, tick + 4))
+            for baddie in Baddie.baddies:
+              if (baddie._x, baddie._y) == (self._x-1,self._y): # force falling on dig
+                baddie.move(baddie._x, baddie._y)
             return screen
 
 class Baddie (Character):
@@ -133,26 +142,6 @@ class Baddie (Character):
             if level[index(x, y-1)] != 1 and level[index(x, y)] == 2:
                 moves.append((0, -1))
         return moves
-
-    def move (self,dx,dy):
-        tx = self._x + dx
-        ty = self._y + dy
-        if in_level(tx,ty):
-            dest = self._level[index(tx,ty)]
-            if dest != 1: # not brick
-                if dy != -1:
-                    self._x = tx
-                    self._y = ty
-                    self._img.move(dx*CELL_SIZE,dy*CELL_SIZE)
-
-                    while (can_fall(self)): #falling
-                        self._y += 1
-                        self._img.move(0*CELL_SIZE,1*CELL_SIZE)
-                elif dy == -1: # only move up on ladders
-                    if dest == 2 or (dest in [0,3] and self._level[index(self._x, self._y)] == 2):
-                        self._x = tx
-                        self._y = ty
-                        self._img.move(dx*CELL_SIZE,dy*CELL_SIZE)
 
 def gold_collected (player, window, level, golddic):
 
@@ -208,7 +197,29 @@ def won (window):
 
 def create_level(self):
     screen = []
-    #a lot less gold, level easy to finish for testing
+    #test of level 52
+    # screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
+    # screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
+    # screen.extend([1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1])
+    # screen.extend([1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1])
+    # screen.extend([1,1,1,3,3,3,3,0,0,4,0,0,2,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1])
+    # screen.extend([1,1,1,2,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,1,1,1])
+    # screen.extend([1,1,1,2,0,0,0,0,0,0,0,0,0,3,3,3,3,3,0,0,3,3,3,3,3,0,2,1,1,1,1,1,1,1,1])
+    # screen.extend([1,1,1,2,3,3,3,3,3,3,3,3,3,3,0,0,0,0,0,0,0,2,0,0,0,0,2,0,0,0,0,1,1,1,1])
+    # screen.extend([1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,2,1,0,0,0,2,0,0,0,0,1,1,1,1])
+    # screen.extend([1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,2,1,1,1,1])
+    # screen.extend([1,1,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,1,1,1,1])
+    # screen.extend([1,1,1,2,0,0,0,0,0,0,4,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,1,0,0,2,0,1,1,1,1])
+    # screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,2,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,2,0,1,1,1,1])
+    # screen.extend([1,1,1,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,1,1,1,1])
+    # screen.extend([1,1,1,0,0,0,0,0,0,0,4,0,0,2,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,2,0,1,1,1,1])
+    # screen.extend([1,1,1,2,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,2,0,1,1,1,1])
+    # screen.extend([1,1,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,3,3,3,3,2,0,1,1,1,1])
+    # screen.extend([1,1,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1])
+    # screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
+    # screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
+
+    # the original level
     screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,2,0,0,0,0,0,0,0,2,1,1,1,1,1,1,1,1,1,1,1,1,0])
     screen.extend([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
     screen.extend([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0])
@@ -223,34 +234,12 @@ def create_level(self):
     screen.extend([2,0,0,0,0,0,3,3,0,0,0,0,0,0,3,3,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2])
     screen.extend([2,0,1,1,1,1,0,0,1,1,1,1,1,1,0,0,1,2,1,0,0,0,0,3,3,3,2,0,0,1,1,1,1,1,2])
     screen.extend([2,0,1,0,0,1,0,0,1,0,0,0,0,1,0,0,1,2,1,1,1,1,1,1,0,0,2,0,0,1,0,0,0,1,2])
-    screen.extend([2,0,1,0,0,1,0,0,1,0,0,0,0,1,0,0,1,2,0,0,0,0,0,1,0,0,2,0,0,1,0,0,0,1,2])
+    screen.extend([2,0,1,4,4,1,0,0,1,0,4,4,4,1,0,0,1,2,0,4,4,4,0,1,0,0,2,0,0,1,4,4,4,1,2])
     screen.extend([2,0,1,1,1,1,0,0,1,2,1,1,1,1,0,0,1,1,1,1,1,1,1,1,0,0,2,0,0,1,1,1,1,1,2])
     screen.extend([2,0,3,3,3,3,3,3,3,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,3,3,3,3,3,3,3,2])
     screen.extend([1,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,1])
     screen.extend([1,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,2,0,0,0,0,0,0,0,1])
     screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
-
-    # the original level
-    # screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,2,0,0,0,0,0,0,0,2,1,1,1,1,1,1,1,1,1,1,1,1,0])
-    # screen.extend([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
-    # screen.extend([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0])
-    # screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1])
-    # screen.extend([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,1,2,1,0,0,0,1,2,0,1])
-    # screen.extend([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,2,0,0,0,0,1,1,1,1])
-    # screen.extend([3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,0,0,0,0,0,0,0,0,2,0,0,0,0,3,3,3,3])
-    # screen.extend([2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0])
-    # screen.extend([2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1])
-    # screen.extend([2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0,0,0,0,0,0,2,3,3,3,3,3,3,3,2])
-    # screen.extend([2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2])
-    # screen.extend([2,0,0,0,0,0,3,3,0,0,0,0,0,0,3,3,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,2])
-    # screen.extend([2,0,1,1,1,1,0,0,1,1,1,1,1,1,0,0,1,2,1,0,0,0,0,3,3,3,2,0,0,1,1,1,1,1,2])
-    # screen.extend([2,0,1,0,0,1,0,0,1,0,0,0,0,1,0,0,1,2,1,1,1,1,1,1,0,0,2,0,0,1,0,0,0,1,2])
-    # screen.extend([2,0,1,4,4,1,0,0,1,0,4,4,4,1,0,0,1,2,0,4,4,4,0,1,0,0,2,0,0,1,4,4,4,1,2])
-    # screen.extend([2,0,1,1,1,1,0,0,1,2,1,1,1,1,0,0,1,1,1,1,1,1,1,1,0,0,2,0,0,1,1,1,1,1,2])
-    # screen.extend([2,0,3,3,3,3,3,3,3,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,3,3,3,3,3,3,3,2])
-    # screen.extend([1,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,1])
-    # screen.extend([1,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,2,0,0,0,0,0,0,0,1])
-    # screen.extend([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
     return screen
 
 def draw_item(level, window, item, index):
@@ -280,11 +269,15 @@ def create_screen (level,window):
     return brickdic, golddic
 
 #returns whatever the character is
-def collision_detetction(window, level, player, golddic):
+def collision_detetction(window, level, character, player, golddic):
     px = player._x
     py = player._y
-    if level[index(px,py)] == 4:
+    cx = character._x
+    cy = character._y
+    # anyone can pick up gold
+    if level[index(cx,cy)] == 4:
         return 'gold'
+    # we only care about baddie-player collisions
     for baddie in Baddie.baddies:
         if (px, py) == (baddie._x, baddie._y):
             return 'baddie'
@@ -307,12 +300,12 @@ def main ():
 
     brickdic, golddic = create_screen(level,window)
     refilllist = []
-    p = Player(10,18,window,level)
+    p = Player(14,17,window,level)
 
-    baddie1 = Baddie(5, 2, window, level, p)
-    baddie2 = Baddie(18, 1, window, level, p)
-    baddie3 = Baddie(18, 18, window, level, p)
-    baddie4 = Baddie(32, 2, window, level, p)
+    baddie1 = Baddie(22,17,window,level,p)
+    baddie2 = Baddie(22,11,window,level,p)
+    baddie3 = Baddie(23,4,window,level,p)
+    baddie4 = Baddie(7,8,window,level,p)
     start = time.time()
     tick = 0
     while not p.at_exit():
@@ -320,8 +313,19 @@ def main ():
         if sameTick == False:
             level = refill(window, level, brickdic, refilllist, sameTick, tick, p, Baddie.baddies)
             for baddie in Baddie.baddies:
-                x, y = choice(baddie.possible_moves(level))
-                baddie.move(x, y)
+                try:
+                  x, y = choice(baddie.possible_moves(level))
+                  baddie.move(x, y)
+                except IndexError: # if we don't have any moves
+                  baddie.move(baddie._x, baddie._y)
+                collision = collision_detetction(window, level, baddie, p, golddic) # need to also run collision detection with bad guys
+                if collision == 'gold':
+                    level[index(baddie._x, baddie._y)] = 0
+                    golddic[(baddie._x, baddie._y)].undraw()
+                    del golddic[(baddie._x, baddie._y)]
+                    gold_collected (p, window, level, golddic)
+                elif collision == 'baddie':
+                    lost(window)
         key = window.checkKey()
         if key == 'q':
             window.close()
@@ -333,7 +337,7 @@ def main ():
         elif key in MOVE:
             (dx,dy) = MOVE[key]
             p.move(dx,dy)
-            collision = collision_detetction(window, level, p, golddic)
+            collision = collision_detetction(window, level, p, p, golddic)
             if collision == 'gold':
                 level[index(p._x, p._y)] = 0
                 golddic[(p._x, p._y)].undraw()
